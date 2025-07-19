@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="index.js"></script>
+    <title>Maze Generator</title>
+    <style>
+        .maze-row {
+            display: flex;
+        }
+        .maze-cell {
+            width: 10px;
+            height: 10px;
+            display: flex;
+        }
+        .black { background: black; }
+        .white { background: white; }
+    </style>
+</head>
+<body>
+    <label for="maze-size">Maze size</label>
+    <select id="maze-size">
+        <option value="30">30</option>
+        <option value="60">60</option>
+        <option value="100">100</option>
+    </select>
+    <div id="maze-grid">
+    </div>
+</body>
+</html>
