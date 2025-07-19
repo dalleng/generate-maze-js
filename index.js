@@ -27,20 +27,27 @@ function shuffle(arr) {
 }
 
 function dfsMaze(maze, size, row, col) {
-  const directionDiff = [[-2, 0], [0, 2], [2, 0], [0, -2]];
-  shuffle(directionDiff);
-  console.log(directionDiff);
-  for (diff of directionDiff) {
-    const [ rd, cd ] = diff;
-    const newRow = row + rd;
-    const newCol = col + cd;
-    if (newRow < 0 || newCol < 0) continue;
-    if (newRow > size-1 || newCol > size-1) continue;
-    if (maze[newRow][newCol] === OPEN)  continue;
-    maze[row][col] = OPEN;
-    maze[newRow][newCol] = OPEN;
-    maze[(row + newRow) / 2][(col + newCol) / 2] = OPEN;
-    dfsMaze(maze, size, newRow, newCol);
+  const frontier = [[row, col]];
+  while (frontier.length > 0) {
+    const [currentRow, currentCol] = frontier.pop();
+
+    const directionDiff = [[-2, 0], [0, 2], [2, 0], [0, -2]];
+    shuffle(directionDiff);
+
+    for (diff of directionDiff) {
+      const [ rd, cd ] = diff;
+      const newRow = currentRow + rd;
+      const newCol = currentCol + cd;
+
+      if (newRow < 0 || newCol < 0) continue;
+      if (newRow > size-1 || newCol > size-1) continue;
+      if (maze[newRow][newCol] === OPEN)  continue;
+
+      maze[currentRow][currentCol] = OPEN;
+      maze[newRow][newCol] = OPEN;
+      maze[(currentRow + newRow) / 2][(currentCol + newCol) / 2] = OPEN;
+      frontier.push([newRow, newCol]);
+    }
   }
 }
 
