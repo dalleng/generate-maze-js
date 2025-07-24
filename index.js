@@ -4,8 +4,8 @@ const MAZE_GRID_SELECTOR = "#maze-grid";
 
 function initializeMaze(size) {
   const maze = [];
-  for (i = 0; i < size; i++) {
-    for (j = 0; j < size; j++) {
+  for (let i = 0; i < size; i++) {
+    for (let j = 0; j < size; j++) {
       if (j === 0) maze.push([]);
       maze[i][j] = CLOSED;
     }
@@ -18,15 +18,15 @@ function getRandomInt(max) {
 }
 
 function shuffle(arr) {
-  for (i = 0; i < arr.length; i++) {
-    j = getRandomInt(arr.length);
-    aux = arr[i];
+  for (let i = 0; i < arr.length; i++) {
+    const j = getRandomInt(arr.length);
+    const aux = arr[i];
     arr[i] = arr[j];
     arr[j] = aux;
   }
 }
 
-function dfsMaze(maze, size, row, col) {
+function* dfsMaze(maze, size, row, col) {
   const frontier = [[row, col]];
   while (frontier.length > 0) {
     const [currentRow, currentCol] = frontier.pop();
@@ -34,7 +34,7 @@ function dfsMaze(maze, size, row, col) {
     const directionDiff = [[-2, 0], [0, 2], [2, 0], [0, -2]];
     shuffle(directionDiff);
 
-    for (diff of directionDiff) {
+    for (let diff of directionDiff) {
       const [ rd, cd ] = diff;
       const newRow = currentRow + rd;
       const newCol = currentCol + cd;
@@ -45,25 +45,21 @@ function dfsMaze(maze, size, row, col) {
 
       maze[currentRow][currentCol] = OPEN;
       maze[newRow][newCol] = OPEN;
+      yield;
       maze[(currentRow + newRow) / 2][(currentCol + newCol) / 2] = OPEN;
+      yield;
       frontier.push([newRow, newCol]);
     }
   }
 }
 
-function generateMaze(size) {
-  const maze = initializeMaze(size);
-  dfsMaze(maze, size, 0, 0);
-  return maze;
-}
-
 function renderMaze(maze) {
   const gridContainer = document.querySelector(MAZE_GRID_SELECTOR);
-  for (i = 0; i < maze.length; i++) {
+  for (let i = 0; i < maze.length; i++) {
     const row = document.createElement("div");
     row.className = "maze-row";
     gridContainer.appendChild(row);
-    for (j = 0; j < maze.length; j++) {
+    for (let j = 0; j < maze.length; j++) {
       const cell = document.createElement("div");
       cell.className = maze[i][j] == OPEN ? "maze-cell white" : "maze-cell black";
       row.appendChild(cell);
@@ -71,12 +67,32 @@ function renderMaze(maze) {
   }
 }
 
+function clearMaze() {
+    const gridContainer = document.querySelector(MAZE_GRID_SELECTOR);
+    gridContainer.replaceChildren();
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function generateAndRenderStepByStep(size) {
+  const maze = initializeMaze(size);
+  const gen = dfsMaze(maze, size, 0, 0);
+  let result = gen.next();
+  while (!result.done) {
+    renderMaze(maze);
+    await sleep(150);
+    result = gen.next();
+    if (!result.done) clearMaze();
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const sizeSelect = document.querySelector("#maze-size");
-  const gridContainer = document.querySelector(MAZE_GRID_SELECTOR);
   sizeSelect.addEventListener("change", (e) => {
-    gridContainer.innerHTML = "";
-    renderMaze(generateMaze(e.target.value));
+    clearMaze();
+    generateAndRenderStepByStep(parseInt(sizeSelect.value));
   });
-  renderMaze(generateMaze(parseInt(sizeSelect.value)));
+  generateAndRenderStepByStep(parseInt(sizeSelect.value));
 });
