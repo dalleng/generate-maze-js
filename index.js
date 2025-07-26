@@ -45,13 +45,14 @@ function* dfsMaze(maze, size, row, col) {
 
       maze[currentRow][currentCol] = OPEN;
       maze[newRow][newCol] = OPEN;
-      yield;
+      // yield;
       maze[(currentRow + newRow) / 2][(currentCol + newCol) / 2] = OPEN;
       yield;
       frontier.push([newRow, newCol]);
     }
   }
 }
+
 
 function renderMaze(maze) {
   const gridContainer = document.querySelector(MAZE_GRID_SELECTOR);
@@ -82,17 +83,21 @@ async function generateAndRenderStepByStep(size) {
   let result = gen.next();
   while (!result.done) {
     renderMaze(maze);
-    await sleep(150);
+    await sleep(50);
     result = gen.next();
     if (!result.done) clearMaze();
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const sizeSelect = document.querySelector("#maze-size");
-  sizeSelect.addEventListener("change", (e) => {
+  sizeSelect.addEventListener("change", async (e) => {
     clearMaze();
-    generateAndRenderStepByStep(parseInt(sizeSelect.value));
+    sizeSelect.setAttribute("disabled", "disabled");
+    await generateAndRenderStepByStep(parseInt(sizeSelect.value));
+    sizeSelect.removeAttribute("disabled");
   });
-  generateAndRenderStepByStep(parseInt(sizeSelect.value));
+  sizeSelect.setAttribute("disabled", "disabled");
+  await generateAndRenderStepByStep(parseInt(sizeSelect.value));
+  sizeSelect.removeAttribute("disabled");
 });
