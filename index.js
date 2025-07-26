@@ -28,11 +28,17 @@ function shuffle(arr) {
 
 function* dfsMaze(maze, size, row, col) {
   const frontier = [[row, col]];
+  const visited = new Set();
+  visited.add(`${row},${col}`);
+
   while (frontier.length > 0) {
     const [currentRow, currentCol] = frontier.pop();
+    const directionDiff = [[-1, 0], [0, 1], [1, 0], [0, -1]];
 
-    const directionDiff = [[-2, 0], [0, 2], [2, 0], [0, -2]];
-    shuffle(directionDiff);
+    maze[currentRow][currentCol] = OPEN;
+    if (currentRow == size-1 && currentCol == size-1) {
+      break;
+    }
 
     for (let diff of directionDiff) {
       const [ rd, cd ] = diff;
@@ -42,13 +48,11 @@ function* dfsMaze(maze, size, row, col) {
       if (newRow < 0 || newCol < 0) continue;
       if (newRow > size-1 || newCol > size-1) continue;
       if (maze[newRow][newCol] === OPEN)  continue;
+      if (visited.has(`${newRow},${newCol}`)) continue;
 
-      maze[currentRow][currentCol] = OPEN;
-      maze[newRow][newCol] = OPEN;
-      yield;
-      maze[(currentRow + newRow) / 2][(currentCol + newCol) / 2] = OPEN;
-      yield;
+      yield; // so that we can suspend execution render the maze, and resume after.
       frontier.push([newRow, newCol]);
+      visited.add(`${newRow},${newCol}`);
     }
   }
 }
@@ -82,17 +86,13 @@ async function generateAndRenderStepByStep(size) {
   let result = gen.next();
   while (!result.done) {
     renderMaze(maze);
-    await sleep(150);
+    await sleep(10);
     result = gen.next();
-    if (!result.done) clearMaze();
+    clearMaze();
   }
+  renderMaze(maze);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const sizeSelect = document.querySelector("#maze-size");
-  sizeSelect.addEventListener("change", (e) => {
-    clearMaze();
-    generateAndRenderStepByStep(parseInt(sizeSelect.value));
-  });
-  generateAndRenderStepByStep(parseInt(sizeSelect.value));
+  generateAndRenderStepByStep(30);
 });
