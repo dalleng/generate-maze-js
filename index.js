@@ -45,8 +45,16 @@ function* dfsMaze(maze, size, row, col) {
 
       maze[currentRow][currentCol] = OPEN;
       maze[newRow][newCol] = OPEN;
-      // yield;
       maze[(currentRow + newRow) / 2][(currentCol + newCol) / 2] = OPEN;
+
+      // deal with mazes where size is an even number
+      // assumes exit is in (size-1, size-1)
+      if (size % 2 == 0 && newCol == size-2 && newRow == size-2) {
+        maze[size-1][size-1] = OPEN;
+        const diff = [[0, 1], [1, 0]][getRandomInt(2)];
+        maze[newRow+diff[0]][newCol+diff[1]] = OPEN;
+      }
+
       yield;
       frontier.push([newRow, newCol]);
     }
